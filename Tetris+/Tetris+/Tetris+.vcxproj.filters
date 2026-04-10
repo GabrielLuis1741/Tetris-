@@ -26,7 +26,7 @@
     <QtRcc Include="Tetris.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
-    <QtUic Include="Tetris.ui">
+    <QtUic Include="TetrisPlusV2.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

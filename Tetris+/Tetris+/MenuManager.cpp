@@ -18,8 +18,3 @@ void MenuManager() {
 		break;
 	}
 }
-
-
-bool GameEngine::isGameOver() const {
-    return gameOver;
-}

@@ -94,7 +94,7 @@
   <ItemGroup>
     <ClCompile Include="MenuManager.cpp" />
     <QtRcc Include="Tetris.qrc" />
-    <QtUic Include="Tetris.ui" />
+    <QtUic Include="TetrisPlusV2.ui" />
     <ClCompile Include="..\..\GameEngine.cpp" />
     <ClCompile Include="..\..\main.cpp" />
     <ClCompile Include="..\..\TetrisPlusV2.cpp" />
