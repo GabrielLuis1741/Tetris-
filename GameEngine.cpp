@@ -42,11 +42,21 @@ void GameEngine::checkLines() {     // line checking for scoring full rows
     }
 }
 
-void GameEngine::SpawnNextBlock() {     // spawns next block
-    if (activeBlock) { delete activeBlock; activeBlock = nullptr; } //if there is still an active block, delete it
-    int randomBlock = rand() % 7;   // initialize randomizer
-    int startX = 3, startY = 0;     // create the block in the top middle of the gird
-    switch (randomBlock) {          // make a switch case for the randomizer to choose a block
+void GameEngine::SpawnNextBlock() {     
+    if (activeBlock) { delete activeBlock; activeBlock = nullptr; }
+
+    if (nextPiecesQueue.empty()) {
+        for (int i = 0; i < 4; i++) {
+            nextPiecesQueue.push_back(rand() % 7);
+        }
+    }
+
+	int nextType = nextPiecesQueue.front();
+	nextPiecesQueue.erase(nextPiecesQueue.begin());
+	nextPiecesQueue.push_back(rand() % 7);
+    
+    int startX = 3, startY = 0;     
+    switch (nextType) {          
     case 0: activeBlock = new TBlock(startX, startY); break;
     case 1: activeBlock = new OBlock(startX, startY); break;
     case 2: activeBlock = new IBlock(startX, startY); break;
@@ -65,7 +75,7 @@ void GameEngine::lockActiveBlock() {
         int worldX = activeBlock->getX() + c.first;
         int worldY = activeBlock->getY() + c.second;
         if (worldY >= 0 && worldY < rows && worldX >= 0 && worldX < columns)
-            grid[worldY][worldX] = 1;
+			grid[worldY][worldX] = static_cast<int>(activeBlock->getColor()) + 1; // Store color as non-zero value for grid representation
     }
     delete activeBlock;
     activeBlock = nullptr;
@@ -110,3 +120,7 @@ void GameEngine::rotateActiveBlock() {
 int GameEngine::getScore() const { return score; }
 std::vector<std::vector<int>> GameEngine::getGrid() const { return grid; }
 bool GameEngine::isGameOver() const { return gameOver; }
+
+Block* GameEngine::getActiveBlock() const { return activeBlock; }
+
+std::vector<int> GameEngine::getNextPieces() const { return nextPiecesQueue; }

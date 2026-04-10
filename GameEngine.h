@@ -18,6 +18,8 @@ private:
     int dropAccumulatorMs = 0;
     bool gameOver = false;
 
+    std::vector<int> nextPiecesQueue;
+
 public:
     GameEngine();
     ~GameEngine();
@@ -39,4 +41,7 @@ public:
     int getScore() const;
     std::vector<std::vector<int>> getGrid() const;
     bool isGameOver() const;
+	Block* getActiveBlock() const;
+
+    std::vector<int> getNextPieces() const;
 };
