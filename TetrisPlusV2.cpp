@@ -16,8 +16,35 @@ TetrisPlusV2::TetrisPlusV2(QWidget* parent)
     centralWidget()->setStyleSheet("background:transparent;");
 
     setFixedSize(500, 610);
-    srand(static_cast<unsigned>(time(0)));  
-    engine.SpawnNextBlock();
+    srand(static_cast<unsigned>(time(0)));
+    inMainMenu = true;
+
+    titleLabel = new QLabel("Tetris+", this);
+    titleLabel->setGeometry(0, 100, 500, 100);
+    titleLabel->setAlignment(Qt::AlignCenter);
+    titleLabel->setStyleSheet("color: cyan; font-size: 65px; font-weight: bold; font-family: Arial;");
+
+    endlessButton = new QPushButton("Endless Mode", this);
+    endlessButton->setGeometry(150, 280, 200, 50);
+    endlessButton->setStyleSheet(
+        "QPushButton { background-color: #333; color: white; font-size: 20px; font-weight: bold; border-radius: 10px; }"
+        "QPushButton:hover { background-color: #555; }" 
+    );
+
+    timedButton = new QPushButton("Time Trial (Soon)", this);
+    timedButton->setGeometry(150, 350, 200, 50);
+    timedButton->setStyleSheet("QPushButton { background-color: #222; color: gray; font-size: 16px; font-weight: bold; border-radius: 10px; }");
+    timedButton->setEnabled(false);
+
+    connect(endlessButton, &QPushButton::clicked, this, [=]() {
+        inMainMenu = false;          
+        titleLabel->hide();           
+        endlessButton->hide();
+        timedButton->hide();
+
+        engine.reset();               
+        this->setFocus();             
+        });
 
 	QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, [=]() {
@@ -31,6 +58,8 @@ TetrisPlusV2::~TetrisPlusV2() {}
 
 
 void TetrisPlusV2::keyPressEvent(QKeyEvent* event) {
+    if (inMainMenu) return;
+
     if (engine.isGameOver()) {
         if (event->key() == Qt::Key_R) {
             engine.reset();
@@ -51,6 +80,11 @@ void TetrisPlusV2::keyPressEvent(QKeyEvent* event) {
 
 void TetrisPlusV2::paintEvent(QPaintEvent*) {
     QPainter painter(this);
+
+    if (inMainMenu) {
+        painter.fillRect(0, 0, width(), height(), QColor(20, 20, 20));
+        return;
+    }
     int cellSize = 30;
 
     auto grid = engine.getGrid();
