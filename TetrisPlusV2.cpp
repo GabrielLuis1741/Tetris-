@@ -15,7 +15,7 @@ TetrisPlusV2::TetrisPlusV2(QWidget* parent)
     centralWidget()->setAttribute(Qt::WA_TransparentForMouseEvents);
     centralWidget()->setStyleSheet("background:transparent;");
 
-    setFixedSize(450, 610);
+    setFixedSize(500, 610);
     srand(static_cast<unsigned>(time(0)));  
     engine.SpawnNextBlock();
 
@@ -99,10 +99,18 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
             painter.fillRect(drawX * cellSize, drawY * cellSize, cellSize - 1, cellSize - 1, qtColor);
         }
     }
+
+    int sidePanelX = 320;
+    int sidePanelWidth = 160;
+
     painter.setPen(Qt::white);
     QFont uiFont("Arial", 16, QFont::Bold);
     painter.setFont(uiFont);
-    painter.drawText(330, 40, "Next");
+
+    painter.drawText(QRect(sidePanelX, 30, sidePanelWidth, 30), Qt::AlignCenter, "Score");
+    painter.drawText(QRect(sidePanelX, 60, sidePanelWidth, 30), Qt::AlignCenter, QString::number(engine.getScore()));
+
+    painter.drawText(QRect(sidePanelX, 120, sidePanelWidth, 30), Qt::AlignCenter, "Next");
 
 	auto nextPieces = engine.getNextPieces();
     for (int i = 0; i < nextPieces.size(); i++) {
@@ -131,11 +139,18 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
 			case TetrisColor::Cyan: qtColor = Qt::cyan; break;
             }
 
-            int offsetX = 330;
-            int offsetY = 80 + (i * 120);
+            int minX = 4, maxX = 0;
+            for (auto& cell : tempBlock->getCells()) {
+                if (cell.first < minX) minX = cell.first;
+                if (cell.first > maxX) maxX = cell.first;
+            }
+            int blockPixelWidth = (maxX - minX + 1) * cellSize;
+
+            int drawOffsetX = sidePanelX + ((sidePanelWidth - blockPixelWidth) / 2) - (minX * cellSize);
+            int drawOffsetY = 180 + (i * 90);
 
             for (auto& cell : tempBlock->getCells()) {
-                painter.fillRect(offsetX + (cell.first * cellSize), offsetY + (cell.second * cellSize), cellSize - 1, cellSize - 1, qtColor);
+                painter.fillRect(drawOffsetX + (cell.first * cellSize), drawOffsetY + (cell.second * cellSize), cellSize - 1, cellSize - 1, qtColor);
             }
             delete tempBlock;
         }
