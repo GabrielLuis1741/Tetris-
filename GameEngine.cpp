@@ -112,6 +112,19 @@ void GameEngine::moveDown() {
     else { lockActiveBlock(); SpawnNextBlock(); }
 }
 
+void GameEngine::hardDrop() {
+    if (!activeBlock || gameOver) return;
+    int dropDistance = 0;
+
+    while (canPlace(activeBlock, activeBlock->getX(), activeBlock->getY() + 1)) {
+        activeBlock->move(0, 1);
+		dropDistance++;
+    }
+    score += (dropDistance * 2);
+    lockActiveBlock();
+    SpawnNextBlock();
+}
+
 void GameEngine::rotateActiveBlock() {
     if (activeBlock && canPlace(activeBlock, activeBlock->getX(), activeBlock->getY(), true))
         activeBlock->rotate();
@@ -124,3 +137,23 @@ bool GameEngine::isGameOver() const { return gameOver; }
 Block* GameEngine::getActiveBlock() const { return activeBlock; }
 
 std::vector<int> GameEngine::getNextPieces() const { return nextPiecesQueue; }
+
+void GameEngine::reset() {
+    score = 0;
+    gameOver = false;
+    dropAccumulatorMs = 0;
+
+    if (activeBlock) {
+        delete activeBlock;
+        activeBlock = nullptr;
+    }
+
+    for (int row = 0; row < rows; row++) {
+        for (int col =0; col < columns; col++) {
+            grid[row][col] = 0;
+		}
+    }
+
+    nextPiecesQueue.clear();
+    SpawnNextBlock();
+}

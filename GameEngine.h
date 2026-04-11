@@ -28,13 +28,14 @@ public:
     void checkLines();
     void lockActiveBlock();
     void SpawnNextBlock();
-
+    void reset();
     void update(int deltaMs);
 
     void moveLeft();
     void moveRight();
     void moveDown();
     void rotateActiveBlock();
+    void hardDrop();
 
     void PrintGrid();
 

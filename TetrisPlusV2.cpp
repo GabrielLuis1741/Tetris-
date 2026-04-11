@@ -31,12 +31,19 @@ TetrisPlusV2::~TetrisPlusV2() {}
 
 
 void TetrisPlusV2::keyPressEvent(QKeyEvent* event) {
-    if (engine.isGameOver()) return;
+    if (engine.isGameOver()) {
+        if (event->key() == Qt::Key_R) {
+            engine.reset();
+            update();
+        }
+        return;
+    }
     switch (event->key()) {
     case Qt::Key_Left:  engine.moveLeft();          break;
     case Qt::Key_Right: engine.moveRight();         break;
     case Qt::Key_Down:  engine.moveDown();          break;
     case Qt::Key_Up:    engine.rotateActiveBlock(); break;
+    case Qt::Key_Space: engine.hardDrop();          break;
     default: QMainWindow::keyPressEvent(event);     break;
     }
     update();
@@ -158,9 +165,17 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
 
     if (engine.isGameOver()) {
         painter.fillRect(0, 0, width(), height(), QColor(0, 0, 0, 180));
-        QFont font("Arial", 30, QFont::Bold);
-        painter.setFont(font);
-        painter.drawText(rect(), Qt::AlignCenter, "Game Over");
+
+        painter.setPen(Qt::red);
+        QFont bigFont("Arial", 30, QFont::Bold);
+        painter.setFont(bigFont);
+        painter.drawText(QRect(0, height() / 2 - 60, width(), 50), Qt::AlignCenter, "Game Over");
+
+		painter.setPen(Qt::white);
+        QFont smallFont("Arial", 16, QFont::Bold);
+        painter.setFont(smallFont);
+		painter.drawText(QRect(0, height() / 2 + 10, width(), 50), Qt::AlignCenter, "Press R to Restart");
+
     }
 }
 
