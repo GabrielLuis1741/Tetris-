@@ -155,17 +155,17 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
 
 	auto nextPieces = engine.getNextPieces();
     for (int i = 0; i < nextPieces.size(); i++) {
-		int type = nextPieces[i];
+        int type = nextPieces[i];
 
         Block* tempBlock = nullptr;
         switch (type) {
-		case 0: tempBlock = new TBlock(0, 0); break;
+        case 0: tempBlock = new TBlock(0, 0); break;
         case 1: tempBlock = new OBlock(0, 0); break;
         case 2: tempBlock = new IBlock(0, 0); break;
         case 3: tempBlock = new LBlock(0, 0); break;
         case 4: tempBlock = new JBlock(0, 0); break;
-        case 5: tempBlock = new SBlock(0, 0); break;
-        case 6: tempBlock = new ZBlock(0, 0); break;
+        case 5: tempBlock = new ZBlock(0, 0); break;
+        case 6: tempBlock = new SBlock(0, 0); break;
         }
 
         if (tempBlock) {

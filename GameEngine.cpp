@@ -126,8 +126,27 @@ void GameEngine::hardDrop() {
 }
 
 void GameEngine::rotateActiveBlock() {
-    if (activeBlock && canPlace(activeBlock, activeBlock->getX(), activeBlock->getY(), true))
-        activeBlock->rotate();
+    if (!activeBlock) return;
+
+    // Try rotation with a series of small offsets (wall kicks).
+    // We attempt the rotation in-place first, then try common horizontal shifts
+    // and a small upward shift to allow rotation near walls/obstacles.
+    const std::vector<std::pair<int,int>> kicks = {
+        {0, 0}, {-1, 0}, {1, 0}, {-2, 0}, {2, 0}, {0, -1}, {-1, -1}, {1, -1}
+    };
+
+    int baseX = activeBlock->getX();
+    int baseY = activeBlock->getY();
+    for (auto &k : kicks) {
+        int nx = baseX + k.first;
+        int ny = baseY + k.second;
+        if (canPlace(activeBlock, nx, ny, true)) {
+            activeBlock->rotate();
+            // move by the kick offset
+            activeBlock->move(k.first, k.second);
+            break;
+        }
+    }
 }
 
 int GameEngine::getScore() const { return score; }
