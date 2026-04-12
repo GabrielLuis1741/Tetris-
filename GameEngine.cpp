@@ -1,4 +1,5 @@
 #include "GameEngine.h"
+#include <algorithm>
 
 GameEngine::GameEngine() {  // Create the grid and set up the score and blocks
     score = 0; 
@@ -35,6 +36,9 @@ void GameEngine::checkLines() {     // line checking for scoring full rows
         }
         if (fullRow) {  // give points after determining that it is indeed a full row
             score += 100;
+			linesCleared++;
+			level = (linesCleared / 10) + 1;   // increase level every 10 lines cleared
+			dropIntervalMs = std::max(100, 1000 - (level - 1) * 100);   // increase drop speed with level, capped at 100ms
             grid.erase(grid.begin() + i);   // delete all blocks in the row after scoring
             grid.insert(grid.begin(),std::vector<int>(columns, 0));    // insert empty spaces in the grid after deletion 
             i++;    // move to next row
