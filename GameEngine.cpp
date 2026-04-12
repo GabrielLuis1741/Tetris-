@@ -161,6 +161,8 @@ Block* GameEngine::getActiveBlock() const { return activeBlock; }
 
 std::vector<int> GameEngine::getNextPieces() const { return nextPiecesQueue; }
 
+int GameEngine::getLevel() const { return level; }
+
 void GameEngine::reset() {
     score = 0;
     gameOver = false;

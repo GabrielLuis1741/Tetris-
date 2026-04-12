@@ -46,5 +46,7 @@ public:
     bool isGameOver() const;
 	Block* getActiveBlock() const;
 
+    int getLevel() const;
+
     std::vector<int> getNextPieces() const;
 };
