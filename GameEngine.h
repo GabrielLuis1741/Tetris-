@@ -5,6 +5,8 @@
 #include <ctime>
 #include "blocks.h"
 
+enum class GameMode{ Endless, TimeTrial};
+
 class GameEngine {
 private:
     Block* activeBlock;
@@ -21,6 +23,9 @@ private:
 	int linesCleared = 0;
 
     std::vector<int> nextPiecesQueue;
+
+    GameMode mode = GameMode::Endless;
+    int timeRemainingMs = 180000;
 
 public:
     GameEngine();
@@ -49,4 +54,8 @@ public:
     int getLevel() const;
 
     std::vector<int> getNextPieces() const;
+
+    void setMode(GameMode newMode);
+    GameMode getMode() const;
+    int getTimeRemainingMs() const;
 };

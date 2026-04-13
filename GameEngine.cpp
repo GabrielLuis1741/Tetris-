@@ -35,6 +35,7 @@ void GameEngine::checkLines() {     // line checking for scoring full rows
             if (grid[i][j] == 0) { fullRow = false; break; }    // if any point in the row is empty, does not qualify for a full row
         }
         if (fullRow) {  // give points after determining that it is indeed a full row
+            if (mode == GameMode::TimeTrial) timeRemainingMs += 5000;
             score += 100;
 			linesCleared++;
 			level = (linesCleared / 10) + 1;   // increase level every 10 lines cleared
@@ -88,6 +89,13 @@ void GameEngine::lockActiveBlock() {
 
 void GameEngine::update(int deltaMs) {
     if (gameOver) return;
+    if (mode == GameMode::TimeTrial) {
+        timeRemainingMs -= deltaMs;
+        if (timeRemainingMs <= 0) {
+            timeRemainingMs = 0;
+            gameOver = true;
+        }
+    }
     dropAccumulatorMs += deltaMs;
     if (!activeBlock) SpawnNextBlock();
     while (dropAccumulatorMs >= dropIntervalMs && !gameOver) {
@@ -181,4 +189,10 @@ void GameEngine::reset() {
 
     nextPiecesQueue.clear();
     SpawnNextBlock();
+    timeRemainingMs = 180000;
+
 }
+
+void GameEngine::setMode(GameMode newMode) { mode = newMode; }
+GameMode GameEngine::getMode() const { return mode; }
+int GameEngine::getTimeRemainingMs() const { return timeRemainingMs; }

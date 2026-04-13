@@ -31,10 +31,12 @@ TetrisPlusV2::TetrisPlusV2(QWidget* parent)
         "QPushButton:hover { background-color: #555; }" 
     );
 
-    timedButton = new QPushButton("Time Trial (Soon)", this);
+    timedButton = new QPushButton("Time Trial", this);
     timedButton->setGeometry(150, 350, 200, 50);
-    timedButton->setStyleSheet("QPushButton { background-color: #222; color: gray; font-size: 16px; font-weight: bold; border-radius: 10px; }");
-    timedButton->setEnabled(false);
+    timedButton->setStyleSheet("QPushButton { background-color: #333; color: white; font-size: 20px; font-weight: bold; border-radius: 10px; }"
+        "QPushButton:hover { background-color: #555; }"
+    );
+
 
     connect(endlessButton, &QPushButton::clicked, this, [=]() {
         inMainMenu = false;          
@@ -42,8 +44,20 @@ TetrisPlusV2::TetrisPlusV2(QWidget* parent)
         endlessButton->hide();
         timedButton->hide();
 
+		engine.setMode(GameMode::Endless);
         engine.reset();               
         this->setFocus();             
+        });
+
+    connect(timedButton, &QPushButton::clicked, this, [=]() {
+        inMainMenu = false;
+        titleLabel->hide();
+        endlessButton->hide();
+        timedButton->hide();
+
+        engine.setMode(GameMode::TimeTrial);
+        engine.reset();
+        this->setFocus();
         });
 
 	QTimer* timer = new QTimer(this);
@@ -64,6 +78,13 @@ void TetrisPlusV2::keyPressEvent(QKeyEvent* event) {
         if (event->key() == Qt::Key_R) {
             engine.reset();
             update();
+        }
+        else if (event->key() == Qt::Key_M) {
+            inMainMenu = true;
+            titleLabel->show();      
+            endlessButton->show();    
+            timedButton->show();      
+            update();                 
         }
         return;
     }
@@ -201,6 +222,18 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
         }
     }
 
+    if (engine.getMode() == GameMode::TimeTrial) {
+        painter.setPen(Qt::white);
+        painter.drawText(QRect(sidePanelX, 550, sidePanelWidth, 30), Qt::AlignCenter, "Time");
+
+        int totalSeconds = engine.getTimeRemainingMs() / 1000;
+        int mins = totalSeconds / 60;
+        int secs = totalSeconds % 60;
+
+        QString timeStr = QString("%1:%2").arg(mins).arg(secs, 2, 10, QChar('0'));
+        painter.drawText(QRect(sidePanelX, 580, sidePanelWidth, 30), Qt::AlignCenter, timeStr);
+    }
+
     if (engine.isGameOver()) {
         painter.fillRect(0, 0, width(), height(), QColor(0, 0, 0, 180));
 
@@ -213,6 +246,7 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
         QFont smallFont("Arial", 16, QFont::Bold);
         painter.setFont(smallFont);
 		painter.drawText(QRect(0, height() / 2 + 10, width(), 50), Qt::AlignCenter, "Press R to Restart");
+        painter.drawText(QRect(0, height() / 2 + 40, width(), 50), Qt::AlignCenter, "Press M for Main Menu");
 
     }
 }
