@@ -1,4 +1,5 @@
 #include "GameEngine.h"
+#include <algorithm>
 
 GameEngine::GameEngine() {  // Create the grid and set up the score and blocks
     score = 0; 
@@ -35,6 +36,9 @@ void GameEngine::checkLines() {     // line checking for scoring full rows
         }
         if (fullRow) {  // give points after determining that it is indeed a full row
             score += 100;
+			linesCleared++;
+			level = (linesCleared / 10) + 1;   // increase level every 10 lines cleared
+			dropIntervalMs = std::max(100, 1000 - (level - 1) * 100);   // increase drop speed with level, capped at 100ms
             grid.erase(grid.begin() + i);   // delete all blocks in the row after scoring
             grid.insert(grid.begin(),std::vector<int>(columns, 0));    // insert empty spaces in the grid after deletion 
             i++;    // move to next row
@@ -126,8 +130,27 @@ void GameEngine::hardDrop() {
 }
 
 void GameEngine::rotateActiveBlock() {
-    if (activeBlock && canPlace(activeBlock, activeBlock->getX(), activeBlock->getY(), true))
-        activeBlock->rotate();
+    if (!activeBlock) return;
+
+    // Try rotation with a series of small offsets (wall kicks).
+    // We attempt the rotation in-place first, then try common horizontal shifts
+    // and a small upward shift to allow rotation near walls/obstacles.
+    const std::vector<std::pair<int,int>> kicks = {
+        {0, 0}, {-1, 0}, {1, 0}, {-2, 0}, {2, 0}, {0, -1}, {-1, -1}, {1, -1}
+    };
+
+    int baseX = activeBlock->getX();
+    int baseY = activeBlock->getY();
+    for (auto &k : kicks) {
+        int nx = baseX + k.first;
+        int ny = baseY + k.second;
+        if (canPlace(activeBlock, nx, ny, true)) {
+            activeBlock->rotate();
+            // move by the kick offset
+            activeBlock->move(k.first, k.second);
+            break;
+        }
+    }
 }
 
 int GameEngine::getScore() const { return score; }
@@ -137,6 +160,8 @@ bool GameEngine::isGameOver() const { return gameOver; }
 Block* GameEngine::getActiveBlock() const { return activeBlock; }
 
 std::vector<int> GameEngine::getNextPieces() const { return nextPiecesQueue; }
+
+int GameEngine::getLevel() const { return level; }
 
 void GameEngine::reset() {
     score = 0;

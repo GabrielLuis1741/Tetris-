@@ -17,6 +17,8 @@ private:
     int dropIntervalMs = 1000;
     int dropAccumulatorMs = 0;
     bool gameOver = false;
+	int level = 1;
+	int linesCleared = 0;
 
     std::vector<int> nextPiecesQueue;
 
@@ -43,6 +45,8 @@ public:
     std::vector<std::vector<int>> getGrid() const;
     bool isGameOver() const;
 	Block* getActiveBlock() const;
+
+    int getLevel() const;
 
     std::vector<int> getNextPieces() const;
 };
