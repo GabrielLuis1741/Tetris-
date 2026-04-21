@@ -6,6 +6,7 @@
 #include "GameEngine.h"
 #include <QPushButton>
 #include <QLabel>
+#include <QPixmap>
 
 class TetrisPlusV2 : public QMainWindow
 {
@@ -28,5 +29,6 @@ private:
     QLabel* titleLabel;
     QPushButton* endlessButton;
     QPushButton* timedButton;
+    QPixmap menuBackground;
 };
 

@@ -1,4 +1,5 @@
 <RCC>
-    <qresource prefix="Tetris">
+    <qresource prefix="/Tetris">
+        <file>tetrisbg.jpg</file>
     </qresource>
 </RCC>

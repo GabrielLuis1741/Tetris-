@@ -23,9 +23,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="Tetris.qrc">
-      <Filter>Resource Files</Filter>
-    </QtRcc>
     <QtUic Include="TetrisPlusV2.ui">
       <Filter>Form Files</Filter>
     </QtUic>
@@ -64,5 +61,10 @@
     <QtMoc Include="..\..\TetrisPlusV2.h">
       <Filter>Source Files</Filter>
     </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\..\Downloads\tetrisbg.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

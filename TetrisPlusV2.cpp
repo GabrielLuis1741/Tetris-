@@ -49,6 +49,25 @@ TetrisPlusV2::TetrisPlusV2(QWidget* parent)
         this->setFocus();             
         });
 
+    // Load menu background from resources. The project's .qrc was changed — try several common paths
+    const QString candidates[] = {
+        ":/tetrisbg.jpg",
+        ":/Tetris/tetrisbg.jpg",
+        ":/images/tetrisbg.jpg",
+        ":/assets/images/tetrisbg.jpg",
+        ":/tetris/tetrisbg.jpg",
+        ":/Tetris/assets/images/menu_bg.png",
+        "tetrisbg.jpg",
+        "assets/images/tetrisbg.jpg",
+        "assets/images/menu_bg.png"
+    };
+    for (const QString &p : candidates) {
+        if (!p.isEmpty()) {
+            menuBackground = QPixmap(p);
+            if (!menuBackground.isNull()) break;
+        }
+    }
+
     connect(timedButton, &QPushButton::clicked, this, [=]() {
         inMainMenu = false;
         titleLabel->hide();
@@ -104,7 +123,14 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
     QPainter painter(this);
 
     if (inMainMenu) {
-        painter.fillRect(0, 0, width(), height(), QColor(20, 20, 20));
+        if (!menuBackground.isNull()) {
+            painter.drawPixmap(rect(), menuBackground);
+            // subtle dark overlay to improve contrast for UI elements
+            painter.fillRect(0, 0, width(), height(), QColor(0, 0, 0, 120));
+        }
+        else {
+            painter.fillRect(0, 0, width(), height(), QColor(20, 20, 20));
+        }
         return;
     }
     int cellSize = 30;
@@ -166,7 +192,7 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
     int sidePanelX = 320;
     int sidePanelWidth = 160;
 
-    painter.setPen(Qt::white);
+    painter.setPen(Qt::black);
     QFont uiFont("Arial", 16, QFont::Bold);
     painter.setFont(uiFont);
 
@@ -243,7 +269,7 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
         painter.setFont(pausedFont);
         painter.drawText(QRect(0, height() / 2 - 40, width(), 50), Qt::AlignCenter, "Paused");
 
-        painter.setPen(Qt::white);
+        painter.setPen(Qt::black);
         QFont smallFont("Arial", 14, QFont::Bold);
         painter.setFont(smallFont);
         painter.drawText(QRect(0, height() / 2 + 20, width(), 30), Qt::AlignCenter, "Press Esc to Resume");
@@ -258,7 +284,7 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
         painter.setFont(bigFont);
         painter.drawText(QRect(0, height() / 2 - 60, width(), 50), Qt::AlignCenter, "Game Over");
 
-		painter.setPen(Qt::white);
+        painter.setPen(Qt::black);
         QFont smallFont("Arial", 16, QFont::Bold);
         painter.setFont(smallFont);
 		painter.drawText(QRect(0, height() / 2 + 10, width(), 50), Qt::AlignCenter, "Press R to Restart");
