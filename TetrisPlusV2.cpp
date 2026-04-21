@@ -94,6 +94,7 @@ void TetrisPlusV2::keyPressEvent(QKeyEvent* event) {
     case Qt::Key_Down:  engine.moveDown();          break;
     case Qt::Key_Up:    engine.rotateActiveBlock(); break;
     case Qt::Key_Space: engine.hardDrop();          break;
+    case Qt::Key_Escape: engine.pause();            break;
     default: QMainWindow::keyPressEvent(event);     break;
     }
     update();
@@ -232,6 +233,21 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
 
         QString timeStr = QString("%1:%2").arg(mins).arg(secs, 2, 10, QChar('0'));
         painter.drawText(QRect(sidePanelX, 580, sidePanelWidth, 30), Qt::AlignCenter, timeStr);
+    }
+
+    // Paused overlay
+    if (engine.isPaused()) {
+        painter.fillRect(0, 0, width(), height(), QColor(0, 0, 0, 160));
+        painter.setPen(Qt::yellow);
+        QFont pausedFont("Arial", 30, QFont::Bold);
+        painter.setFont(pausedFont);
+        painter.drawText(QRect(0, height() / 2 - 40, width(), 50), Qt::AlignCenter, "Paused");
+
+        painter.setPen(Qt::white);
+        QFont smallFont("Arial", 14, QFont::Bold);
+        painter.setFont(smallFont);
+        painter.drawText(QRect(0, height() / 2 + 20, width(), 30), Qt::AlignCenter, "Press Esc to Resume");
+        return;
     }
 
     if (engine.isGameOver()) {

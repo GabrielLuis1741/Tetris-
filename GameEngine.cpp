@@ -89,6 +89,7 @@ void GameEngine::lockActiveBlock() {
 
 void GameEngine::update(int deltaMs) {
     if (gameOver) return;
+    if (paused) return;
     if (mode == GameMode::TimeTrial) {
         timeRemainingMs -= deltaMs;
         if (timeRemainingMs <= 0) {
@@ -107,17 +108,29 @@ void GameEngine::update(int deltaMs) {
     }
 }
 
+void GameEngine::pause() {
+    // Toggle pause state
+    paused = !paused;
+}
+
+bool GameEngine::isPaused() const {
+    return paused;
+}
+
 void GameEngine::moveLeft() {
+    if (gameOver || paused) return;
     if (activeBlock && canPlace(activeBlock, activeBlock->getX() - 1, activeBlock->getY()))
         activeBlock->move(-1, 0);
 }
 
 void GameEngine::moveRight() {
+    if (gameOver || paused) return;
     if (activeBlock && canPlace(activeBlock, activeBlock->getX() + 1, activeBlock->getY()))
         activeBlock->move(1, 0);
 }
 
 void GameEngine::moveDown() {
+    if (gameOver || paused) return;
     if (!activeBlock) return;
     if (canPlace(activeBlock, activeBlock->getX(), activeBlock->getY() + 1))
         activeBlock->move(0, 1);
@@ -125,7 +138,7 @@ void GameEngine::moveDown() {
 }
 
 void GameEngine::hardDrop() {
-    if (!activeBlock || gameOver) return;
+    if (!activeBlock || gameOver || paused) return;
     int dropDistance = 0;
 
     while (canPlace(activeBlock, activeBlock->getX(), activeBlock->getY() + 1)) {
@@ -174,6 +187,7 @@ int GameEngine::getLevel() const { return level; }
 void GameEngine::reset() {
     score = 0;
     gameOver = false;
+    paused = false;
     dropAccumulatorMs = 0;
 
     if (activeBlock) {

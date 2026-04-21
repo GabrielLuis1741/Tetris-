@@ -26,6 +26,7 @@ private:
 
     GameMode mode = GameMode::Endless;
     int timeRemainingMs = 180000;
+    bool paused = false;
 
 public:
     GameEngine();
@@ -58,4 +59,6 @@ public:
     void setMode(GameMode newMode);
     GameMode getMode() const;
     int getTimeRemainingMs() const;
+    void pause();
+    bool isPaused() const;
 };
