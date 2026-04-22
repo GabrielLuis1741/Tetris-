@@ -56,11 +56,15 @@ void GameEngine::SpawnNextBlock() {
         }
     }
 
-	int nextType = nextPiecesQueue.front();
+    int nextType = nextPiecesQueue.front();
 	nextPiecesQueue.erase(nextPiecesQueue.begin());
 	nextPiecesQueue.push_back(rand() % 7);
     
     int startX = 3, startY = 0;     
+    // record the active type and allow hold for this spawn
+    activeType = nextType;
+    canHold = true;
+
     switch (nextType) {          
     case 0: activeBlock = new TBlock(startX, startY); break;
     case 1: activeBlock = new OBlock(startX, startY); break;
@@ -115,6 +119,61 @@ void GameEngine::pause() {
 
 bool GameEngine::isPaused() const {
     return paused;
+}
+
+void GameEngine::hold() {
+    if (gameOver || paused) return;
+    if (!canHold) return; // only once per drop
+
+    // If nothing is held, move current active type to held and spawn next
+    if (heldPiece == -1) {
+        heldPiece = activeType;
+        // Immediately spawn next piece
+        if (activeBlock) { delete activeBlock; activeBlock = nullptr; }
+        if (!nextPiecesQueue.empty()) {
+            int nextType = nextPiecesQueue.front();
+            nextPiecesQueue.erase(nextPiecesQueue.begin());
+            nextPiecesQueue.push_back(rand() % 7);
+            activeType = nextType;
+            int startX = 3, startY = 0;
+            switch (nextType) {
+            case 0: activeBlock = new TBlock(startX, startY); break;
+            case 1: activeBlock = new OBlock(startX, startY); break;
+            case 2: activeBlock = new IBlock(startX, startY); break;
+            case 3: activeBlock = new LBlock(startX, startY); break;
+            case 4: activeBlock = new JBlock(startX, startY); break;
+            case 5: activeBlock = new ZBlock(startX, startY); break;
+            case 6: activeBlock = new SBlock(startX, startY); break;
+            }
+            if (!canPlace(activeBlock, activeBlock->getX(), activeBlock->getY())) gameOver = true;
+        }
+    }
+    else {
+        // swap held piece with current active piece
+        int prevHeld = heldPiece;
+        heldPiece = activeType;
+        // replace active with prevHeld
+        if (activeBlock) { delete activeBlock; activeBlock = nullptr; }
+        int startX = 3, startY = 0;
+        activeType = prevHeld;
+        switch (prevHeld) {
+        case 0: activeBlock = new TBlock(startX, startY); break;
+        case 1: activeBlock = new OBlock(startX, startY); break;
+        case 2: activeBlock = new IBlock(startX, startY); break;
+        case 3: activeBlock = new LBlock(startX, startY); break;
+        case 4: activeBlock = new JBlock(startX, startY); break;
+        case 5: activeBlock = new ZBlock(startX, startY); break;
+        case 6: activeBlock = new SBlock(startX, startY); break;
+        }
+        if (!canPlace(activeBlock, activeBlock->getX(), activeBlock->getY())) gameOver = true;
+    }
+
+    // After holding, disallow further holds until next spawn
+    canHold = false;
+}
+
+int GameEngine::getHeldPiece() const {
+    return heldPiece;
 }
 
 void GameEngine::moveLeft() {
@@ -202,6 +261,8 @@ void GameEngine::reset() {
     }
 
     nextPiecesQueue.clear();
+    heldPiece = -1;
+    canHold = true;
     SpawnNextBlock();
     timeRemainingMs = 180000;
 

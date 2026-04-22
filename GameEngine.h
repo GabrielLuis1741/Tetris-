@@ -26,6 +26,9 @@ private:
 
     GameMode mode = GameMode::Endless;
     int timeRemainingMs = 180000;
+    int activeType = -1; // type index of current active block
+    int heldPiece = -1; // -1 means empty
+    bool canHold = true; // whether hold is allowed for current active piece
     bool paused = false;
 
 public:
@@ -61,4 +64,6 @@ public:
     int getTimeRemainingMs() const;
     void pause();
     bool isPaused() const;
+    void hold();
+    int getHeldPiece() const;
 };

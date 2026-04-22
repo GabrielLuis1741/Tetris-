@@ -27,7 +27,7 @@ TetrisPlusV2::TetrisPlusV2(QWidget* parent)
     endlessButton = new QPushButton("Endless Mode", this);
     endlessButton->setGeometry(150, 280, 200, 50);
     endlessButton->setStyleSheet(
-        "QPushButton { background-color: #333; color: white; font-size: 20px; font-weight: bold; border-radius: 10px; }"
+        "QPushButton { background-color: #333; color: black; font-size: 20px; font-weight: bold; border-radius: 10px; }"
         "QPushButton:hover { background-color: #555; }" 
     );
 
@@ -114,6 +114,7 @@ void TetrisPlusV2::keyPressEvent(QKeyEvent* event) {
     case Qt::Key_Up:    engine.rotateActiveBlock(); break;
     case Qt::Key_Space: engine.hardDrop();          break;
     case Qt::Key_Escape: engine.pause();            break;
+    case Qt::Key_C: engine.hold();                  break;
     default: QMainWindow::keyPressEvent(event);     break;
     }
     update();
@@ -196,15 +197,22 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
     QFont uiFont("Arial", 16, QFont::Bold);
     painter.setFont(uiFont);
 
-    painter.drawText(QRect(sidePanelX, 30, sidePanelWidth, 30), Qt::AlignCenter, "Score");
-    painter.drawText(QRect(sidePanelX, 60, sidePanelWidth, 30), Qt::AlignCenter, QString::number(engine.getScore()));
+    // Top: Score and Level
+    int topY = 20;
+    painter.drawText(QRect(sidePanelX, topY, sidePanelWidth, 30), Qt::AlignCenter, "Score");
+    painter.drawText(QRect(sidePanelX, topY + 30, sidePanelWidth, 30), Qt::AlignCenter, QString::number(engine.getScore()));
 
-    painter.drawText(QRect(sidePanelX, 95, sidePanelWidth, 30), Qt::AlignCenter, "Level");
-    painter.drawText(QRect(sidePanelX, 125, sidePanelWidth, 30), Qt::AlignCenter, QString::number(engine.getLevel()));
+    painter.drawText(QRect(sidePanelX, topY + 70, sidePanelWidth, 30), Qt::AlignCenter, "Level");
+    painter.drawText(QRect(sidePanelX, topY + 100, sidePanelWidth, 30), Qt::AlignCenter, QString::number(engine.getLevel()));
 
-    painter.drawText(QRect(sidePanelX, 160, sidePanelWidth, 30), Qt::AlignCenter, "Next");
+    // Next previews
+    int nextLabelY = topY + 140;
+    painter.drawText(QRect(sidePanelX, nextLabelY, sidePanelWidth, 30), Qt::AlignCenter, "Next");
 
-	auto nextPieces = engine.getNextPieces();
+    int previewStartY = nextLabelY + 30;
+    int previewGap = 80;
+
+    auto nextPieces = engine.getNextPieces();
     for (int i = 0; i < nextPieces.size(); i++) {
         int type = nextPieces[i];
 
@@ -239,8 +247,7 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
             int blockPixelWidth = (maxX - minX + 1) * cellSize;
 
             int drawOffsetX = sidePanelX + ((sidePanelWidth - blockPixelWidth) / 2) - (minX * cellSize);
-            // Move the preview images further down the side panel
-            int drawOffsetY = 200 + (i * 90);
+            int drawOffsetY = previewStartY + (i * previewGap);
 
             for (auto& cell : tempBlock->getCells()) {
                 painter.fillRect(drawOffsetX + (cell.first * cellSize), drawOffsetY + (cell.second * cellSize), cellSize - 1, cellSize - 1, qtColor);
@@ -249,17 +256,60 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
         }
     }
 
-    if (engine.getMode() == GameMode::TimeTrial) {
-        painter.setPen(Qt::white);
-        painter.drawText(QRect(sidePanelX, 550, sidePanelWidth, 30), Qt::AlignCenter, "Time");
+    // After next previews, render Hold area
+    int holdLabelY = previewStartY + (nextPieces.size() * previewGap) + 10;
+    painter.drawText(QRect(sidePanelX, holdLabelY, sidePanelWidth, 30), Qt::AlignCenter, "Hold");
+    int holdDrawY = holdLabelY + 30;
+    int held = engine.getHeldPiece();
+    if (held != -1) {
+        Block* tempHold = nullptr;
+        switch (held) {
+        case 0: tempHold = new TBlock(0, 0); break;
+        case 1: tempHold = new OBlock(0, 0); break;
+        case 2: tempHold = new IBlock(0, 0); break;
+        case 3: tempHold = new LBlock(0, 0); break;
+        case 4: tempHold = new JBlock(0, 0); break;
+        case 5: tempHold = new ZBlock(0, 0); break;
+        case 6: tempHold = new SBlock(0, 0); break;
+        }
+        if (tempHold) {
+            QColor qtColor;
+            switch (tempHold->getColor()) {
+            case TetrisColor::Yellow: qtColor = Qt::yellow; break;
+            case TetrisColor::Purple: qtColor = Qt::magenta; break;
+            case TetrisColor::Green: qtColor = Qt::green; break;
+            case TetrisColor::Red: qtColor = Qt::red; break;
+            case TetrisColor::Blue: qtColor = Qt::blue; break;
+            case TetrisColor::Orange: qtColor = QColor(255, 165, 0); break;
+            case TetrisColor::Cyan: qtColor = Qt::cyan; break;
+            }
+            int minX = 4, maxX = 0;
+            for (auto& cell : tempHold->getCells()) {
+                if (cell.first < minX) minX = cell.first;
+                if (cell.first > maxX) maxX = cell.first;
+            }
+            int blockPixelWidth = (maxX - minX + 1) * cellSize;
+            int drawOffsetX = sidePanelX + ((sidePanelWidth - blockPixelWidth) / 2) - (minX * cellSize);
+            for (auto& cell : tempHold->getCells()) {
+                painter.fillRect(drawOffsetX + (cell.first * cellSize), holdDrawY + (cell.second * cellSize), cellSize - 1, cellSize - 1, qtColor);
+            }
+            delete tempHold;
+        }
+    }
 
+    // Time label at bottom
+    if (engine.getMode() == GameMode::TimeTrial) {
+        painter.setPen(Qt::black);
+        painter.drawText(QRect(sidePanelX, 520, sidePanelWidth, 30), Qt::AlignCenter, "Time");
         int totalSeconds = engine.getTimeRemainingMs() / 1000;
         int mins = totalSeconds / 60;
         int secs = totalSeconds % 60;
-
         QString timeStr = QString("%1:%2").arg(mins).arg(secs, 2, 10, QChar('0'));
-        painter.drawText(QRect(sidePanelX, 580, sidePanelWidth, 30), Qt::AlignCenter, timeStr);
+        painter.drawText(QRect(sidePanelX, 550, sidePanelWidth, 30), Qt::AlignCenter, timeStr);
     }
+
+
+
 
     // Paused overlay
     if (engine.isPaused()) {
