@@ -44,6 +44,7 @@ TetrisPlusV2::TetrisPlusV2(QWidget* parent)
         titleLabel->hide();           
         endlessButton->hide();
         timedButton->hide();
+        controlsButton->hide();
 
 		engine.setMode(GameMode::Endless);
         engine.reset();               
@@ -74,6 +75,7 @@ TetrisPlusV2::TetrisPlusV2(QWidget* parent)
         titleLabel->hide();
         endlessButton->hide();
         timedButton->hide();
+        controlsButton->hide();
 
         engine.setMode(GameMode::TimeTrial);
         engine.reset();
