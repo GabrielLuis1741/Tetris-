@@ -18,11 +18,11 @@ This project brings the timeless gameplay loop of Tetris, and adds modern featur
 
 ---
 ## All Planned Features
-### Point Gain system
+### 1. Point Gain system
 
 Players will earn points by filling and clearing full horizontal rows, with the score increasing for every row cleared at once.
 
-### Randomized Block Spawns
+### 2. Randomized Block Spawns
 
 Tetris blocks are randomly selected from a predetermined set of shapes and spawned at timed intervals throughout gameplay.
 
