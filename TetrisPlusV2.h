@@ -29,6 +29,9 @@ private:
     QLabel* titleLabel;
     QPushButton* endlessButton;
     QPushButton* timedButton;
+	QPushButton* controlsButton;
     QPixmap menuBackground;
+    QPushButton* backButton;
+    QLabel* controlsLabel;
 };
 

@@ -80,6 +80,51 @@ TetrisPlusV2::TetrisPlusV2(QWidget* parent)
         this->setFocus();
         });
 
+    controlsButton = new QPushButton("Controls", this);
+    controlsButton->setGeometry(150, 420, 200, 50);
+    controlsButton->setStyleSheet(
+        "QPushButton { background-color: #333; color: white; font-size: 20px; font-weight: bold; border-radius: 10px; }"
+        "QPushButton:hover { background-color: #555; }"
+    );
+
+    controlsLabel = new QLabel(
+        "Left / Right Arrows - Move Block\n\n"
+        "Down Arrow - Soft Drop\n\n"
+        "Up Arrow - Rotate Block\n\n"
+        "Spacebar - Hard Drop\n\n"
+        "C - Hold Piece\n\n"
+        "Esc - Pause Game", this);
+    controlsLabel->setGeometry(50, 180, 400, 280);
+    controlsLabel->setAlignment(Qt::AlignCenter);
+    controlsLabel->setStyleSheet("color: white; font-size: 18px; font-weight: bold; background: rgba(0,0,0,180); border-radius: 10px;");
+    controlsLabel->hide();
+
+    backButton = new QPushButton("Back to Menu", this);
+    backButton->setGeometry(150, 480, 200, 50);
+    backButton->setStyleSheet(
+        "QPushButton { background-color: #333; color: white; font-size: 20px; font-weight: bold; border-radius: 10px; }"
+        "QPushButton:hover { background-color: #555; }"
+    );
+    backButton->hide();
+
+    connect(controlsButton, &QPushButton::clicked, this, [=]() {
+        endlessButton->hide();
+        timedButton->hide();
+        controlsButton->hide();
+
+        controlsLabel->show();
+        backButton->show();
+        });
+
+    connect(backButton, &QPushButton::clicked, this, [=]() {
+        controlsLabel->hide();
+        backButton->hide();
+
+        endlessButton->show();
+        timedButton->show();
+        controlsButton->show();
+        });
+
 	QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, [=]() {
         engine.update(50);
@@ -103,7 +148,8 @@ void TetrisPlusV2::keyPressEvent(QKeyEvent* event) {
             inMainMenu = true;
             titleLabel->show();      
             endlessButton->show();    
-            timedButton->show();      
+            timedButton->show(); 
+            controlsButton->show();
             update();                 
         }
         return;
@@ -213,7 +259,7 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
     int sidePanelX = 320;
     int sidePanelWidth = 160;
 
-    painter.setPen(Qt::black);
+    painter.setPen(Qt::white);
     QFont uiFont("Arial", 16, QFont::Bold);
     painter.setFont(uiFont);
 
@@ -341,7 +387,7 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
         painter.setFont(pausedFont);
         painter.drawText(QRect(0, height() / 2 - 40, width(), 50), Qt::AlignCenter, "Paused");
 
-        painter.setPen(Qt::black);
+        painter.setPen(Qt::white);
         QFont smallFont("Arial", 14, QFont::Bold);
         painter.setFont(smallFont);
         painter.drawText(QRect(0, height() / 2 + 20, width(), 30), Qt::AlignCenter, "Press Esc to Resume");
@@ -356,7 +402,7 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
         painter.setFont(bigFont);
         painter.drawText(QRect(0, height() / 2 - 60, width(), 50), Qt::AlignCenter, "Game Over");
 
-        painter.setPen(Qt::black);
+        painter.setPen(Qt::white);
         QFont smallFont("Arial", 16, QFont::Bold);
         painter.setFont(smallFont);
 		painter.drawText(QRect(0, height() / 2 + 10, width(), 50), Qt::AlignCenter, "Press R to Restart");
