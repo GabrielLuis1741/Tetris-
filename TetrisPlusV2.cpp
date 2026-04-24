@@ -45,6 +45,7 @@ TetrisPlusV2::TetrisPlusV2(QWidget* parent)
         endlessButton->hide();
         timedButton->hide();
         controlsButton->hide();
+        highscoreButton->hide();
 
 		engine.setMode(GameMode::Endless);
         engine.reset();               
@@ -76,6 +77,7 @@ TetrisPlusV2::TetrisPlusV2(QWidget* parent)
         endlessButton->hide();
         timedButton->hide();
         controlsButton->hide();
+        highscoreButton->hide();
 
         engine.setMode(GameMode::TimeTrial);
         engine.reset();
@@ -113,18 +115,50 @@ TetrisPlusV2::TetrisPlusV2(QWidget* parent)
         endlessButton->hide();
         timedButton->hide();
         controlsButton->hide();
+        highscoreButton->hide();
 
         controlsLabel->show();
         backButton->show();
         });
 
     connect(backButton, &QPushButton::clicked, this, [=]() {
+        highscoreLabel->hide();
         controlsLabel->hide();
         backButton->hide();
 
+        titleLabel->show();
         endlessButton->show();
         timedButton->show();
         controlsButton->show();
+        highscoreButton->show();
+        });
+
+    loadHighScores();
+
+    highscoreButton = new QPushButton("High Scores", this);
+    highscoreButton->setGeometry(150, 490, 200, 50);
+    highscoreButton->setStyleSheet(
+        "QPushButton { background-color: #333; color: white; font-size: 20px; font-weight: bold; border-radius: 10px; }"
+        "QPushButton:hover { background-color: #555; }"
+    );
+
+    highscoreLabel = new QLabel(this);
+    highscoreLabel->setGeometry(20, 100, 460, 350);
+    highscoreLabel->setAlignment(Qt::AlignCenter);
+    highscoreLabel->setStyleSheet("color: gold; font-size: 24px; font-weight: bold; background: rgba(0,0,0,180); border-radius: 10px;");
+    highscoreLabel->hide();
+
+    updateHighScoreDisplay();
+
+    connect(highscoreButton, &QPushButton::clicked, this, [=]() {
+        titleLabel->hide();
+        endlessButton->hide();
+        timedButton->hide();
+        controlsButton->hide();
+        highscoreButton->hide();
+
+        highscoreLabel->show();
+        backButton->show(); 
         });
 
 	QTimer* timer = new QTimer(this);
@@ -143,15 +177,20 @@ void TetrisPlusV2::keyPressEvent(QKeyEvent* event) {
 
     if (engine.isGameOver()) {
         if (event->key() == Qt::Key_R) {
+            saveHighScore(engine.getScore(), engine.getMode());
+            updateHighScoreDisplay();
             engine.reset();
             update();
         }
         else if (event->key() == Qt::Key_M) {
+            saveHighScore(engine.getScore(), engine.getMode());
+            updateHighScoreDisplay();
             inMainMenu = true;
             titleLabel->show();      
             endlessButton->show();    
             timedButton->show(); 
             controlsButton->show();
+            highscoreButton->show();
             update();                 
         }
         return;
@@ -369,7 +408,7 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
 
     // Time label at bottom
     if (engine.getMode() == GameMode::TimeTrial) {
-        painter.setPen(Qt::black);
+        painter.setPen(Qt::white);
         painter.drawText(QRect(sidePanelX, 520, sidePanelWidth, 30), Qt::AlignCenter, "Time");
         int totalSeconds = engine.getTimeRemainingMs() / 1000;
         int mins = totalSeconds / 60;
@@ -413,9 +452,73 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
     }
 }
 
+const char ENCRYPTION_KEY = 0x5A;
+void TetrisPlusV2::loadHighScores() {
+    topEndlessScores.clear();
+    topTimeTrialScores.clear();
+    std::ifstream inFile("scores.dat", std::ios::binary);
 
+    std::ifstream inEndless("scores_endless.dat", std::ios::binary);
+    if (inEndless.is_open()) {
+        int score;
+        while (inEndless.read(reinterpret_cast<char*>(&score), sizeof(int))) {
+            topEndlessScores.push_back(score ^ ENCRYPTION_KEY);
+        }
+        inEndless.close();
+    }
 
+    std::ifstream inTimed("scores_timed.dat", std::ios::binary);
+    if (inTimed.is_open()) {
+        int score;
+        while (inTimed.read(reinterpret_cast<char*>(&score), sizeof(int))) {
+            topTimeTrialScores.push_back(score ^ ENCRYPTION_KEY);
+        }
+        inTimed.close();
+    }
 
+    while (topEndlessScores.size() < 5) topEndlessScores.push_back(0);
+    while (topTimeTrialScores.size() < 5) topTimeTrialScores.push_back(0);
 
+    std::sort(topEndlessScores.rbegin(), topEndlessScores.rend());
+    std::sort(topTimeTrialScores.rbegin(), topTimeTrialScores.rend());
+}
 
-// main menu appearance/buttons
+void TetrisPlusV2::saveHighScore(int newScore, GameMode mode) {
+    if (newScore == 0) return;
+
+    std::vector<int>* targetList = (mode == GameMode::Endless) ? &topEndlessScores : &topTimeTrialScores;
+    std::string filename = (mode == GameMode::Endless) ? "scores_endless.dat" : "scores_timed.dat";
+
+    targetList->push_back(newScore);
+    std::sort(targetList->rbegin(), targetList->rend());
+    if (targetList->size() > 5) targetList->resize(5);
+
+    std::ofstream outFile(filename, std::ios::binary);
+    if (outFile.is_open()) {
+        for (int score : *targetList) {
+            int encryptedScore = score ^ ENCRYPTION_KEY;
+            outFile.write(reinterpret_cast<const char*>(&encryptedScore), sizeof(int));
+        }
+        outFile.close();
+    }
+}
+
+void TetrisPlusV2::updateHighScoreDisplay() {
+    QString html = "<h2 style='text-align:center; color:gold; margin-bottom: 10px;'>TOP 5 SCORES</h2>"
+        "<table width='100%' cellpadding='5' style='color:white; font-size:18px;'>"
+        "<tr>"
+        "<th width='50%' style='color:cyan; font-size:20px;'>Endless Mode</th>"
+        "<th width='50%' style='color:magenta; font-size:20px;'>Time Trial</th>"
+        "</tr>";
+
+    for (int i = 0; i < 5; ++i) {
+        html += QString("<tr><td align='center'>%1. %2</td><td align='center'>%1. %3</td></tr>")
+            .arg(i + 1)
+            .arg(topEndlessScores[i])
+            .arg(topTimeTrialScores[i]);
+    }
+
+    html += "</table>";
+    highscoreLabel->setText(html);
+}
+

@@ -7,6 +7,9 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QPixmap>
+#include <fstream>
+#include <vector>
+#include <algorithm>
 
 class TetrisPlusV2 : public QMainWindow
 {
@@ -33,5 +36,15 @@ private:
     QPixmap menuBackground;
     QPushButton* backButton;
     QLabel* controlsLabel;
+
+    QPushButton* highscoreButton;
+    QLabel* highscoreLabel;
+
+    std::vector<int> topEndlessScores;
+    std::vector<int> topTimeTrialScores;
+
+    void loadHighScores();
+    void saveHighScore(int newScore, GameMode mode);
+    void updateHighScoreDisplay();
 };
 
