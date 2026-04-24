@@ -38,9 +38,6 @@ High scores are automatically recorded per game mode:
 - **Endless Mode** – Tracks highest points earned.
 - **Time Trial Mode** – Tracks best time or highest points within the time limit.
 
-### 6. Player Profiles
-Players can create and manage individual profiles to track their personal high scores and preferences across sessions.
-
 ---
 
 ## Built With
