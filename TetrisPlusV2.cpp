@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <QTimer>
+#include <algorithm>
 
 TetrisPlusV2::TetrisPlusV2(QWidget* parent)
     : QMainWindow(parent)
@@ -27,7 +28,7 @@ TetrisPlusV2::TetrisPlusV2(QWidget* parent)
     endlessButton = new QPushButton("Endless Mode", this);
     endlessButton->setGeometry(150, 280, 200, 50);
     endlessButton->setStyleSheet(
-        "QPushButton { background-color: #333; color: black; font-size: 20px; font-weight: bold; border-radius: 10px; }"
+        "QPushButton { background-color: #333; color: white; font-size: 20px; font-weight: bold; border-radius: 10px; }"
         "QPushButton:hover { background-color: #555; }" 
     );
 
@@ -126,7 +127,7 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
     if (inMainMenu) {
         if (!menuBackground.isNull()) {
             painter.drawPixmap(rect(), menuBackground);
-            // subtle dark overlay to improve contrast for UI elements
+            // dark grid
             painter.fillRect(0, 0, width(), height(), QColor(0, 0, 0, 120));
         }
         else {
@@ -176,7 +177,26 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
         case TetrisColor::Blue: qtColor = Qt::blue; break;
         case TetrisColor::Orange: qtColor = QColor(255, 165, 0); break; // Qt doesn't have a predefined orange color, so we create one using RGB values
         case TetrisColor::Cyan: qtColor = Qt::cyan; break;
+        }
 
+        // Preview current block
+        if (!engine.isGameOver() && !engine.isPaused()) {
+            int gx = active->getX();
+            int gy = active->getY();
+            // find lowest y where the block can be placed
+            while (engine.canPlace(active, gx, gy + 1)) {
+                gy++;
+            }
+            
+            if (gy != active->getY()) {
+                QColor ghostColor = qtColor;
+                ghostColor.setAlpha(90);
+                for (auto& cell : active->getCells()) {
+                    int drawX = gx + cell.first;
+                    int drawY = gy + cell.second;
+                    painter.fillRect(drawX * cellSize, drawY * cellSize, cellSize - 1, cellSize - 1, ghostColor);
+                }
+            }
         }
 
         int xOffset = active->getX();
@@ -213,7 +233,9 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
     int previewGap = 80;
 
     auto nextPieces = engine.getNextPieces();
-    for (int i = 0; i < nextPieces.size(); i++) {
+    int maxPreviews = 3; // show at most this many next-piece previews to avoid overlap
+    int previewsToShow = std::min(static_cast<int>(nextPieces.size()), maxPreviews);
+    for (int i = 0; i < previewsToShow; i++) {
         int type = nextPieces[i];
 
         Block* tempBlock = nullptr;
@@ -257,7 +279,7 @@ void TetrisPlusV2::paintEvent(QPaintEvent*) {
     }
 
     // After next previews, render Hold area
-    int holdLabelY = previewStartY + (nextPieces.size() * previewGap) + 10;
+    int holdLabelY = previewStartY + (previewsToShow * previewGap) + 10;
     painter.drawText(QRect(sidePanelX, holdLabelY, sidePanelWidth, 30), Qt::AlignCenter, "Hold");
     int holdDrawY = holdLabelY + 30;
     int held = engine.getHeldPiece();
